@@ -1,0 +1,21 @@
+{
+  "name": "carbon_tracker",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "web:run": "cd web && npm run dev",
+    "api:migrate": "cd api && python manage.py makemigrations && python manage.py migrate",
+    "api:run": "cd api && python manage.py runserver"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NomaanAkhtar64/carbon_tracker.git#main"
+  },
+  "author": "NomaanAkhtar64",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NomaanAkhtar64/carbon_tracker/issues"
+  },
+  "homepage": "https://github.com/NomaanAkhtar64/carbon_tracker/tree/main#readme"
+}
