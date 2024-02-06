@@ -6,7 +6,7 @@ import { LogoIcon } from '@/icons/Logo'
 export function SideBar() {
   return (
     <div className="flex h-screen flex-col md:flex-row bg-background">
-      <div className="md:w-64 w-full bg-primary p-4">
+      <div className="md:w-64 w-full bg-primary p-4 md:fixed md:h-screen">
         {/* <h2 className="text-lg font-semibold mb-4 text-primary-foreground pb-10">
           CO<sup>2</sup> LOGGING SYSTEM</h2> */}
         <LogoIcon className='md:w-full pb-10 w-64' />
@@ -41,7 +41,7 @@ export function SideBar() {
           </Link>
         </nav>
       </div>
-      <div className="flex-1 p-6">
+      <div className="md:ml-64 flex-1 p-6">
         <Outlet/>
       </div>
     </div>
