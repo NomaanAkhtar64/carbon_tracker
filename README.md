@@ -2,11 +2,7 @@
 
 This repo contains the complete software architecture for a realtime data logging system.
 
-<img src="./docs/images/react.jpg" width="48px" height="32px">
-<img src="./docs/images/django.jpg" width="32px" height="32px">
-<img src="./docs/images/arduino.png" width="32px" height="32px">
-<img src="./docs/images/esp32.jpg" width="32px" height="32px">
-<img src="./docs/images/nodemcu.png" width="32px" height="32px">
+<img src="./docs/images/react.jpg" width="48px" height="32px"> <img src="./docs/images/django.jpg" width="32px" height="32px"> <img src="./docs/images/arduino.png" width="32px" height="32px"> <img src="./docs/images/esp32.jpg" width="32px" height="32px"> <img src="./docs/images/nodemcu.png" width="32px" height="32px">
 
 ---
 
