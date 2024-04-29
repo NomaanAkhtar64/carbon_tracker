@@ -2,9 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 DATA_LOGGER_TYPE = [
-    ("prototype_v1", "prototype_v1"),
-    ("commerical", "commercial"),
-    ("commercial_gps", "commercial_gps"),
+    ("ESP8266", "ESP8266"),
+    ("ESP32", "ESP32"),
 ]
 
 
@@ -24,8 +23,23 @@ class DataLogger(models.Model):
     )
     type = models.CharField(choices=DATA_LOGGER_TYPE, max_length=100)
 
+    def __str__(self) -> str:
+        return f"{" ".join(map(str.capitalize, self.user.get_username().split("_")))} ({self.type})"
+
+
+class Dataset(models.Model):
+    location = models.ForeignKey(
+        to=Location, blank=True, on_delete=models.SET_NULL, null=True
+    )
+    data_logger = models.ForeignKey(to=DataLogger, on_delete=models.SET_NULL, null=True)
+    description = models.CharField(max_length=300)
+
+    def __str__(self) -> str:
+        return f"Dataset#{self.id} {self.location.name}"
+
 
 class Reading(models.Model):
+    dataset = models.ForeignKey(to=Dataset, on_delete=models.SET_NULL, null=True)
     data_logger = models.ForeignKey(to=DataLogger, on_delete=models.SET_NULL, null=True)
     location = models.ForeignKey(
         to=Location, blank=True, on_delete=models.SET_NULL, null=True
@@ -37,4 +51,3 @@ class Reading(models.Model):
     co2_ppm = models.PositiveIntegerField()
 
 
-4

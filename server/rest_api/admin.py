@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Reading, DataLogger, Location
+from .models import Reading, DataLogger, Location, Dataset
 from .actions.csv_export import export_as_csv
 
 # class LocationAdminInline(admin.TabularInline):
@@ -10,7 +10,7 @@ class ReadingAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "data_logger",
-        "time_stamp",G
+        "time_stamp",
         "raw_reading",
         "co2_ppm",
         "temperature",
@@ -21,13 +21,18 @@ class ReadingAdmin(admin.ModelAdmin):
 
 
 class DataLoggerAdmin(admin.ModelAdmin):
-    list_display = ["id", "user", "default_location"]
+    list_display = ["id", "user"]
 
 
 class LocationAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "latitude", "longitude"]
 
 
+class DataSetAdmin(admin.ModelAdmin):
+    list_display = ["id", "description", "data_logger", "location"]
+
+
+admin.site.register(Dataset, DataSetAdmin)
 admin.site.register(Reading, ReadingAdmin)
 admin.site.register(DataLogger, DataLoggerAdmin)
 admin.site.register(Location, LocationAdmin)
