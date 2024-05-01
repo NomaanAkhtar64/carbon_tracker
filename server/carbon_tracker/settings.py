@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import django_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,13 +24,56 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-sdd^yjfne)up_w^2+&n6=bvyu&451%_2g9r#foeek+t#2oi)=@"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            "datefmt": "%d/%b/%Y %H:%M:%S",
+        },
+        "simple": {"format": "%(levelname)s %(message)s"},
+    },
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "heroku.log",
+            "formatter": "verbose",
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],
+            "propagate": True,
+            "level": "DEBUG",
+        },
+        "device": {
+            "handlers": ["file", "console"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "carbon-tracker-karachi-16390eac8b56.herokuapp.com",
+    "localhost",
+    "carbontrackerkarachi.live",
+    "www.carbontrackerkarachi.live",
+]
 CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok-free.app",
-    "http://192.168.1.164",
-    "http://localhost",
+    # "https://*.ngrok-free.app",
+    # # "http://192.168.1.164",
+    # "http://localhost:8000",
+    "https://carbon-tracker-karachi-16390eac8b56.herokuapp.com",
+    "https://www.carbontrackerkarachi.live",
 ]
 
 # Application definition
@@ -41,6 +85,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "rest_framework",
     "django_extensions",
@@ -50,6 +95,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -83,9 +129,17 @@ WSGI_APPLICATION = "carbon_tracker.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": BASE_DIR / "db.sqlite3",
+    # }
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "d6ceed1pqf8a98",
+        "USER": "gulvnnsirvoevp",
+        "PASSWORD": "8ad17d10b1d30b623cc25f8e270d18012e1002930332685ce0e7991885986b11",
+        "HOST": "ec2-52-72-109-141.compute-1.amazonaws.com",
+        "PORT": "5432",
     }
 }
 
@@ -124,16 +178,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-    # "/var/www/static/",
-]
+# STATIC_URL = "/static/"
+# STATICFILES_DIRS = [
+#     BASE_DIR / "static",
+#     # "/var/www/static/",
+# ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# django_heroku.settings(locals())
+STATIC_URL = "/static/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# STORAGES = {
+#     # ...
+#     "staticfiles": {
+#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#     },
+# }
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -155,11 +218,11 @@ JAZZMIN_SETTINGS = {
     # Title on the brand (19 chars max) (defaults to current_admin_site.site_header if absent or None)
     "site_brand": "Carbon Tracker",
     # Logo to use for your site, must be present in static files, used for brand on top left
-    "site_logo": "/logo.png",
+    "site_logo": "/carbon_tracker/logo.png",
     # Logo to use for your site, must be present in static files, used for login form logo (defaults to site_logo)
-    "login_logo": "/login.png",
+    "login_logo": "/carbon_tracker/login.png",
     # Logo to use for login form in dark themes (defaults to login_logo)
-    "login_logo_dark": "/login.png",
+    "login_logo_dark": "/carbon_tracker/login.png",
     # CSS classes that are applied to the logo above
     "site_logo_classes": "no-shadow",
     # Relative path to a favicon for your site, will default to site_logo if absent (ideally 32x32 px)
@@ -246,7 +309,7 @@ JAZZMIN_SETTINGS = {
     # UI Tweaks #
     #############
     # Relative paths to custom CSS/JS scripts (must be present in static files)
-    "custom_css": "jazzmin_overrides.css",
+    "custom_css": "/carbon_tracker/jazzmin_overrides.css",
     "custom_js": None,
     # Whether to link font from fonts.googleapis.com (use custom_css to supply font otherwise)
     "use_google_fonts_cdn": True,

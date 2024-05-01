@@ -10,9 +10,9 @@ router.register(r"readings", ReadingViewset)
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("i18n/", include("django.conf.urls.i18n")),
     path("api/", include(router.urls)),
     path("login/", obtain_auth_token, name="login"),
+    path("admin/", admin.site.urls),
 ]
 # urlpatterns += i18n_patterns(path("admin/", admin.site.urls))
