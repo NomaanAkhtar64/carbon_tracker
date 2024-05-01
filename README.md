@@ -25,4 +25,4 @@ This repo contains the complete software architecture for a realtime data loggin
 | 2    | ESP8266 DataLogger | Working Prototype |
 | 3    | ESP32 DataLogger   | Working Prototype |
 | 4    | Mobile             | In Progress       |
-| 5    | Web-App            | Coming Soon       |
+| 5    | Web App            | Coming Soon       |

@@ -1,6 +1,4 @@
-from rest_api.models import Reading, Dataset
-
-# from multiprocessing.pool import ThreadPool
+from device.models import Reading
 import datetime
 from django.utils import timezone
 
@@ -22,14 +20,12 @@ def get_corrected_datetime(current_dt: datetime.datetime) -> datetime.datetime:
 
 
 def run():
-    # THREADS = 8
-    # pool = ThreadPool(processes=THREADS)
-    reading_set = Reading.objects.all()
-    count = reading_set.count()
-    # batch_size = round(count / 8)
-    for i in range(count):
+    reading_set = Reading.objects.all().in_bulk()
+    count = Reading.objects.count()
+
+    for i in reading_set.keys():
         corrected_dt = get_corrected_datetime(reading_set[i].time_stamp)
         reading_set[i].time_stamp = corrected_dt
-        print(f"Old Time={reading_set[i].time_stamp}; New Time= {corrected_dt}")
+        print(f"{i} of {count} - {100*i/count:.2f}% completed")
 
-    print(Reading.objects.bulk_update(reading_set, ["time_stamp"]))
+    Reading.objects.bulk_update(reading_set.values(), ["time_stamp"], batch_size=100)
