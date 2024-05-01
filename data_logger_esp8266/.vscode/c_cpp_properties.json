@@ -19,7 +19,7 @@
             "includePath": [
                 "C:\\Users\\nomaa\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.1.2\\tools\\sdk\\include",
                 "C:\\Users\\nomaa\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.1.2\\tools\\sdk\\lwip2\\include",
-                "d:\\Projects\\carbon_tracker\\iot_device\\data_logger_esp8266\\esp-build\\core",
+                "D:\\Projects\\carbon_tracker\\data_logger_esp8266\\esp-build\\core",
                 "C:\\Users\\nomaa\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.1.2\\cores\\esp8266",
                 "C:\\Users\\nomaa\\AppData\\Local\\Arduino15\\packages\\esp8266\\hardware\\esp8266\\3.1.2\\variants\\nodemcu",
                 "C:\\Users\\nomaa\\OneDrive\\Documents\\Arduino\\libraries\\Arduino_JSON\\src",

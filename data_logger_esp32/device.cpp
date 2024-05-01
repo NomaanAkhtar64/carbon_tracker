@@ -211,15 +211,17 @@ void DataLogger::setupSensors() {
 void DataLogger::calibrateSensors() { mhz19b.autoCalibration(); }
 
 void DataLogger::loginToCloud() {
-  String loginURL = serverURL + "/login/";
-  httpClient.begin(wclient, loginURL.c_str());
+  httpClient.begin(wclient, loginURL);
   httpClient.addHeader("Content-Type", "application/json");
 
   int httpResponseCode = httpClient.POST(loginInfo);
   String payload = "{}";
 
+  char responeCodeStr[8];
+  sprintf(responeCodeStr, "%d", httpResponseCode);
+
   if (httpResponseCode != 200) {
-    screen.printError("Failed to", "Login Response", (char *)httpResponseCode);
+    screen.printError("Failed to", "Login Response", responeCodeStr);
     httpClient.end();
     return;
   }
@@ -260,14 +262,13 @@ void DataLogger::saveToCloud() {
   reading["humidity"] = (int)round(humidity.getAverage());
   reading["raw_reading"] = (int)round(rawCO2.getAverage());
   reading["co2_ppm"] = (int)round(ppmCO2.getAverage());
-  reading["data_logger"] = 2;
+  reading["dataset"] = 3;
 
   String readingJSONString = "";
   serializeJson(reading, readingJSONString);
   Serial.println(readingJSONString);
 
-  String addReadingURL = serverURL + "/api/readings/";
-  httpClient.begin(wclient, addReadingURL.c_str());
+  httpClient.begin(wclient, addReadingURL);
   httpClient.addHeader("Content-Type", "application/json");
   httpClient.addHeader("Authorization", token);
   int httpResponseCode = httpClient.POST(readingJSONString);

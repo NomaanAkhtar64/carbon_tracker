@@ -3,7 +3,9 @@ char ssid[] = "Storm F1";
 char password[] = "34915311";
 
 ///      CLOUD CONFIG      ///
-String serverURL = "http://192.168.1.164:8000";
+#define serverURL "https://www.carbontrackerkarachi.live"
+#define loginURL serverURL "/login/"
+#define addReadingURL serverURL "/api/readings/"
 #define loginInfo                                                              \
   "{\"username\": \"data_logger_2\",\"password\": "                            \
   "\"Nq#r!ydon#2ARgs4FJrvWik6\"}"
