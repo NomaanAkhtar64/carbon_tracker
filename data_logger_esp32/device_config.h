@@ -1,14 +1,8 @@
-///      WIFI CONFIG      ///
-char ssid[] = "Storm F1";
-char password[] = "34915311";
+#include "secret.h" // SECRET FILE WITH "ssid", "password", "serverURL", and "loginInfo"
 
 ///      CLOUD CONFIG      ///
-#define serverURL "https://www.carbontrackerkarachi.live"
 #define loginURL serverURL "/login/"
 #define addReadingURL serverURL "/api/readings/"
-#define loginInfo                                                              \
-  "{\"username\": \"data_logger_2\",\"password\": "                            \
-  "\"Nq#r!ydon#2ARgs4FJrvWik6\"}"
 
 ///      SD CONFIG      ///
 #define SD_FILENAME "/data_log.csv"
