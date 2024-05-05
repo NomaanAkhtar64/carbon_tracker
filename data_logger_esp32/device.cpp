@@ -134,9 +134,6 @@ void DataLogger::setupWiFi() {
   screen.printStatus("Connecting to", "Wifi", "STATUS");
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-  }
-
   for (int i = 0; i < 15; i++) // Try to connect for 3 seconds
   {
     delay(200);

@@ -1,4 +1,7 @@
 #include "datalogger.h"
+#include "secret.h"
+
+#define SD_FILENAME "./data.csv"
 
 // I2C_PINS
 #define SDA_PIN D2
@@ -8,6 +11,7 @@
 #define MUX_PIN_DELAY 20 // ms
 #define MUX_A D0
 #define MUX_B D3
+bool isSDWorking = true;
 
 // utility function for switching MUX
 void switchMUX(int B, int A) {
@@ -16,18 +20,9 @@ void switchMUX(int B, int A) {
   delay(MUX_PIN_DELAY);
 }
 
-// Wifi Credentials
-char ssid[] = "Maaz-home";
-char password[] = "34915311";
-
 // SD_CARD PINS
 #define CS_PIN D8
 
-// Cloud
-String serverURL = "http://192.168.1.164:8000";
-#define loginInfo                                                              \
-  "{\"username\": \"data_logger_1\",\"password\": "                            \
-  "\"C5j85Az$QLP9ZJFr3u%nFM*b\"}"
 // PUSH_BUTTON_PIN
 #define BUTTON_PIN A0
 
@@ -38,6 +33,8 @@ String serverURL = "http://192.168.1.164:8000";
 // loopTimes
 #define DisplayUpdateTime 300 // ms + 200ms
 #define SaveRate 5 // min
+WiFiClient client;
+HTTPClient http;
 
 DataLogger::DataLogger() {}
 
@@ -47,6 +44,9 @@ void DataLogger::printLCD(String upperline, String lowerline) {
   lcd.println(upperline);
   lcd.setCursor(0, 1);
   lcd.println(lowerline);
+  Serial.print(upperline);
+  Serial.print(" ");
+  Serial.println(lowerline);
 }
 
 void DataLogger::beginLCD() {
@@ -78,18 +78,28 @@ void DataLogger::connectToWifi() {
   lcd.setCursor(0, 1);
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  for (int i = 0; i < 6; i++) // Try to connect for 3 seconds
+  {
     lcd.print(".");
+    delay(500);
+    if (WiFi.status() == WL_CONNECTED) {
+      break;
+    };
   }
+
+  if (WiFi.status() != WL_CONNECTED) {
+    printLCD("   Could  not   ", "connect to  Wifi");
+  }
+
   lcd.clear();
 }
 
 void DataLogger::setupSD() {
   pinMode(CS_PIN, OUTPUT);
-  printLCD("   Insert  SD   ", "      Card      ");
+  // printLCD("   Insert  SD   ", "      Card      ");
   if (!SD.begin(CS_PIN)) {
-    printLCD("    SD Failed   ", "                ");
+    isSDWorking = false;
+    return printLCD("    SD Failed   ", "                ");
   }
   printLCD("    SD Ready    ", "                ");
 }
@@ -109,17 +119,16 @@ void DataLogger::synchronizeRTC() {
     rtc.adjust(DateTime(unix_epoch));
   }
 }
+JsonDocument doc;
 
 void DataLogger::loginToCloud() {
-  WiFiClient client;
-  HTTPClient http;
-  String loginURL = serverURL + "/login/";
-  http.begin(client, loginURL.c_str());
+  http.begin(client, loginURL);
   http.addHeader("Content-Type", "application/json");
 
   int httpResponseCode = http.POST(loginInfo);
   String payload = "{}";
   Serial.println(httpResponseCode);
+
   if (httpResponseCode != 200) {
     printLCD("Failed to Login!", "                ");
     Serial.println("Did not get Response 200");
@@ -129,17 +138,18 @@ void DataLogger::loginToCloud() {
   }
 
   payload = http.getString();
-  JSONVar responseJSON = JSON.parse(payload);
+  payload = http.getString();
+  deserializeJson(doc, payload);
 
-  if (JSON.typeof(responseJSON) == "undefined") {
+  if (doc.isNull()) {
     printLCD("Failed to Login!", "                ");
-    Serial.println("Did not get JSON Response");
+    Serial.println("Did not get JSON Response; got null");
 
     http.end();
     return;
   }
 
-  if (!responseJSON.hasOwnProperty("token")) {
+  if (!doc.containsKey("token")) {
     printLCD("Failed to Login!", "                ");
     Serial.println("No token property in JSON!");
 
@@ -147,7 +157,8 @@ void DataLogger::loginToCloud() {
     return;
   }
 
-  token = (String)responseJSON["token"];
+  String tokenBuffer = doc["token"];
+  sprintf(token, "%s", tokenBuffer);
   isLoggedIN = true;
 
   Serial.println("Logged In to Cloud!");
@@ -166,6 +177,7 @@ void DataLogger::listenForPushButton() {
 bool DataLogger::getReadingAndUpdateLCD() {
   switchMUXDevice(CO2_SENSOR);
   int rawVal = getReading(CO2_PIN); // 200ms to get 10 stable readings
+  Serial.println(rawVal);
   int val = toPPM(getVoltage(rawVal));
   DHT.read(DHT11_PIN);
   co2Sum += val;
@@ -196,14 +208,13 @@ bool DataLogger::getReadingAndUpdateLCD() {
 }
 
 void DataLogger::saveToSD() {
-  const String fileName = "data_log.csv";
-  if (!SD.exists(fileName)) {
+  if (!SD.exists(SD_FILENAME)) {
     printLCD("File not found !", "  Creating....  ");
     Serial.println("File not found!");
-    Serial.print("Creating...");
-    Serial.println(fileName);
+    Serial.print("Creating ");
+    Serial.println(SD_FILENAME);
   }
-  sensorData = SD.open(fileName, FILE_WRITE);
+  sensorData = SD.open(SD_FILENAME, FILE_WRITE);
   if (sensorData) {
     sensorData.println(dataString);
     sensorData.close();
@@ -222,22 +233,24 @@ void DataLogger::saveToCloud(char timeStamp[19]) {
   if (!isLoggedIN)
     return;
 
-  JSONVar reading;
+  JsonDocument reading;
   reading["time_stamp"] = timeStamp;
-  reading["temperature"] = (float)tempSum / readings;
-  reading["humidity"] = (int)humSum / readings;
-  reading["raw_reading"] = (int)co2RawSum / readings;
-  reading["co2_ppm"] = (int)co2Sum / readings;
-  reading["data_logger"] = 1;
+  reading["temperature"] = (float)(tempSum / readings);
+  reading["humidity"] = (int)round(humSum / readings);
+  reading["raw_reading"] = (int)round(co2RawSum / readings);
+  reading["co2_ppm"] = (int)round(co2Sum / readings);
+  reading["dataset"] = 4;
 
-  String readingJSONString = JSON.stringify(reading);
+  String readingJSONString = "";
+  serializeJson(reading, readingJSONString);
   Serial.println(readingJSONString);
-  WiFiClient client;
-  HTTPClient http;
-  String addReadingURL = serverURL + "/api/readings/";
-  http.begin(client, addReadingURL.c_str());
+
+  char tokenStr[46];
+  sprintf(tokenStr, "token %s", token);
+
+  http.begin(client, addReadingURL);
   http.addHeader("Content-Type", "application/json");
-  http.addHeader("Authorization", "token " + token);
+  http.addHeader("Authorization", tokenStr);
   int httpResponseCode = http.POST(readingJSONString);
 
   if (httpResponseCode != 201) {
@@ -261,8 +274,8 @@ bool DataLogger::saveReadingsToCloudAndSD() {
             rtcTime.second());
     sprintf(dataString, "%s,%d,%d,%d,%d", buffer, co2Sum / readings,
             co2RawSum / readings, tempSum / readings, humSum / readings);
-    saveToSD();
-    saveToCloud(buffer);
+    if (isSDWorking) saveToSD();
+    if (WiFi.status() == WL_CONNECTED) saveToCloud(buffer);
     co2Sum = 0;
     tempSum = 0;
     co2RawSum = 0;

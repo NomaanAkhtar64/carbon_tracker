@@ -1,3 +1,4 @@
+
 #include "dataLogger.h"
 #include <arduino-timer.h>
 
@@ -16,9 +17,13 @@ void setup() {
   device.beginLCD();
   device.setupMUX();
   device.connectToWifi();
+  delay(1000);
   device.setupSD();
+  delay(1000);
   device.setupRTC();
+  delay(1000);
   device.loginToCloud();
+  delay(1000);
   timer.every(DisplayUpdateTime, getReadingAndUpdateLCD);
   timer.every(SaveRate * 60000, saveReadingsToCloudAndSD);
 }

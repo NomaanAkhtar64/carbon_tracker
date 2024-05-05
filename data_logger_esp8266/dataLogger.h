@@ -1,6 +1,6 @@
 #include "handleCO2Sensor.h"
 #include <Arduino.h>
-#include <Arduino_JSON.h>
+#include <ArduinoJson.h>
 #include <DFRobot_DHT11.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
@@ -8,6 +8,7 @@
 #include <NTPClient.h>
 #include <RTClib.h>
 #include <SD.h>
+#include <SPI.h>
 #include <TimeLib.h>
 #include <WiFiUdp.h>
 #include <Wire.h>
@@ -27,7 +28,7 @@ private:
   // rtc
   RTC_DS3231 rtc;
   WiFiUDP ntpUDP;
-  NTPClient timeClient = NTPClient(ntpUDP, "pk.pool.ntp.org", 19800, 60000);
+  NTPClient timeClient = NTPClient(ntpUDP, "pool.ntp.org", 18000, 60000);
   // login
   bool isLoggedIN;
   char token[40];
@@ -36,7 +37,7 @@ private:
   bool lastState = false;
   // get_readings
   DFRobot_DHT11 DHT;
-  int readings = 0;
+  double readings = 0;
   int co2Sum = 0;
   int co2RawSum = 0;
   int tempSum = 0;
