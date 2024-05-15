@@ -31,7 +31,6 @@ private:
   NTPClient timeClient = NTPClient(ntpUDP, "pool.ntp.org", 18000, 60000);
   // login
   bool isLoggedIN;
-  char token[40];
   // push_button
   bool isScreenON = true;
   bool lastState = false;

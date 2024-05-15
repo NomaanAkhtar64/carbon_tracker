@@ -15,6 +15,7 @@ bool saveReadingsToCloudAndSD(void *) {
 void setup() {
   Serial.begin(9600);
   device.beginLCD();
+  delay(1000);
   device.setupMUX();
   device.connectToWifi();
   delay(1000);

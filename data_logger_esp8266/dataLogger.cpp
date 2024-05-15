@@ -33,8 +33,7 @@ void switchMUX(int B, int A) {
 // loopTimes
 #define DisplayUpdateTime 300 // ms + 200ms
 #define SaveRate 5 // min
-WiFiClient client;
-HTTPClient http;
+char tokenStr[50];
 
 DataLogger::DataLogger() {}
 
@@ -52,6 +51,8 @@ void DataLogger::printLCD(String upperline, String lowerline) {
 void DataLogger::beginLCD() {
   Wire.begin(SDA_PIN, SCL_PIN);
   lcd.begin(16, 2);
+  lcd.backlight();
+
   printLCD("    Starting    ", "   DataLogger   ");
 }
 
@@ -78,13 +79,18 @@ void DataLogger::connectToWifi() {
   lcd.setCursor(0, 1);
   WiFi.begin(ssid, password);
 
-  for (int i = 0; i < 6; i++) // Try to connect for 3 seconds
-  {
+  // for (int i = 0; i < 6; i++) // Try to connect for 3 seconds
+  // {
+  //   lcd.print(".");
+  //   delay(500);
+  //   if (WiFi.status() == WL_CONNECTED) {
+  //     break;
+  //   };
+  // }
+
+  while (WiFi.status() != WL_CONNECTED) {
     lcd.print(".");
     delay(500);
-    if (WiFi.status() == WL_CONNECTED) {
-      break;
-    };
   }
 
   if (WiFi.status() != WL_CONNECTED) {
@@ -122,6 +128,9 @@ void DataLogger::synchronizeRTC() {
 JsonDocument doc;
 
 void DataLogger::loginToCloud() {
+  WiFiClient client;
+  HTTPClient http;
+
   http.begin(client, loginURL);
   http.addHeader("Content-Type", "application/json");
 
@@ -137,7 +146,6 @@ void DataLogger::loginToCloud() {
     return;
   }
 
-  payload = http.getString();
   payload = http.getString();
   deserializeJson(doc, payload);
 
@@ -158,7 +166,9 @@ void DataLogger::loginToCloud() {
   }
 
   String tokenBuffer = doc["token"];
-  sprintf(token, "%s", tokenBuffer);
+  sprintf(tokenStr, "token %s", tokenBuffer.c_str());
+  Serial.println(tokenStr);
+
   isLoggedIN = true;
 
   Serial.println("Logged In to Cloud!");
@@ -177,7 +187,7 @@ void DataLogger::listenForPushButton() {
 bool DataLogger::getReadingAndUpdateLCD() {
   switchMUXDevice(CO2_SENSOR);
   int rawVal = getReading(CO2_PIN); // 200ms to get 10 stable readings
-  Serial.println(rawVal);
+
   int val = toPPM(getVoltage(rawVal));
   DHT.read(DHT11_PIN);
   co2Sum += val;
@@ -245,8 +255,8 @@ void DataLogger::saveToCloud(char timeStamp[19]) {
   serializeJson(reading, readingJSONString);
   Serial.println(readingJSONString);
 
-  char tokenStr[46];
-  sprintf(tokenStr, "token %s", token);
+  WiFiClient client;
+  HTTPClient http;
 
   http.begin(client, addReadingURL);
   http.addHeader("Content-Type", "application/json");
@@ -274,8 +284,10 @@ bool DataLogger::saveReadingsToCloudAndSD() {
             rtcTime.second());
     sprintf(dataString, "%s,%d,%d,%d,%d", buffer, co2Sum / readings,
             co2RawSum / readings, tempSum / readings, humSum / readings);
-    if (isSDWorking) saveToSD();
-    if (WiFi.status() == WL_CONNECTED) saveToCloud(buffer);
+    if (isSDWorking)
+      saveToSD();
+    if (WiFi.status() == WL_CONNECTED)
+      saveToCloud(buffer);
     co2Sum = 0;
     tempSum = 0;
     co2RawSum = 0;
