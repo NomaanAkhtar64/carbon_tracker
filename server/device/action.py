@@ -1,8 +1,9 @@
 import csv
-from .models import Reading, Dataset
+
 from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
 from django.contrib.admin.utils import label_for_field
+from django.utils import timezone
 
 
 def export_as_csv(description="Download selected rows as CSV file", header=True):
@@ -24,6 +25,7 @@ def export_as_csv(description="Download selected rows as CSV file", header=True)
         # field_names = modeladmin.list_display
         field_names = [
             "id",
+            "dataset",
             "time_stamp",
             "temperature",
             "humidity",
@@ -41,10 +43,15 @@ def export_as_csv(description="Download selected rows as CSV file", header=True)
         if header:
             headers = []
             for field_name in list(field_names):
-                label = label_for_field(field_name, modeladmin.model, modeladmin)
-                if str.islower(label):
-                    label = str.title(label)
-                headers.append(label)
+                if field_name == "dataset":
+                    headers.append("Dataset")
+                    headers.append("Latitude")
+                    headers.append("Longitude")
+                else:
+                    label = label_for_field(field_name, modeladmin.model, modeladmin)
+                    if str.islower(label):
+                        label = str.title(label)
+                    headers.append(label)
             writer.writerow(headers)
         for row in queryset:
             values = []
@@ -57,7 +64,19 @@ def export_as_csv(description="Download selected rows as CSV file", header=True)
                         value = "Error retrieving value"
                 if value is None:
                     value = ""
-                values.append(str(value))
+
+                if field == "dataset":
+                    values.append(str(value))
+                    values.append(str(value.location.latitude))
+                    values.append(str(value.location.longitude))
+
+                elif field == "time_stamp":
+                    values.append(
+                        str(value.astimezone(tz=timezone.get_current_timezone()))
+                    )
+
+                else:
+                    values.append(str(value))
             writer.writerow(values)
         return response
 

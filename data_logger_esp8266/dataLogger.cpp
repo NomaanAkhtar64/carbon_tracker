@@ -249,7 +249,7 @@ void DataLogger::saveToCloud(char timeStamp[19]) {
   reading["humidity"] = (int)round(humSum / readings);
   reading["raw_reading"] = (int)round(co2RawSum / readings);
   reading["co2_ppm"] = (int)round(co2Sum / readings);
-  reading["dataset"] = 4;
+  reading["dataset"] = 6;
 
   String readingJSONString = "";
   serializeJson(reading, readingJSONString);

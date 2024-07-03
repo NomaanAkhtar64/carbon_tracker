@@ -1,9 +1,10 @@
 from pathlib import Path
-import dj_database_url
-import os
-from dotenv import load_dotenv, dotenv_values
 
-load_dotenv()
+# import dj_database_url
+import os
+from dotenv import load_dotenv
+
+load_dotenv("secret.env")
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -11,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = False
+DEBUG = True
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -52,9 +53,12 @@ LOGGING = {
 ALLOWED_HOSTS = [
     "carbon-tracker-karachi-16390eac8b56.herokuapp.com",
     "localhost",
+    "127.0.0.1",
     "carbontrackerkarachi.live",
     "www.carbontrackerkarachi.live",
 ]
+INTERNAL_IPS = ["127.0.0.1"]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://carbon-tracker-karachi-16390eac8b56.herokuapp.com",
     "https://www.carbontrackerkarachi.live",
@@ -70,15 +74,18 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "rest_framework",
+    "corsheaders",
     "django_extensions",
     "rest_framework.authtoken",
     "device.apps.DeviceConfig",
+    "dashboard.apps.DashboardConfig",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -108,13 +115,17 @@ WSGI_APPLICATION = "carbon_tracker.wsgi.application"
 
 
 DATABASES = {
+    # "default": {
+    #     "ENGINE": "django.db.backends.postgresql_psycopg2",
+    #     "NAME": os.getenv("DB_NAME"),
+    #     "USER": os.getenv("DB_USER"),
+    #     "PASSWORD": os.getenv("DB_PASS"),
+    #     "HOST": os.getenv("DB_HOST"),
+    #     "PORT": os.getenv("DB_PORT"),
+    # },
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASS"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
 
@@ -148,6 +159,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATIC_URL = "/static/"
 
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
@@ -156,7 +168,7 @@ REST_FRAMEWORK = {
     ]
 }
 
-DATABASES["default"] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+# DATABASES["default"] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 
 JAZZMIN_SETTINGS = {
@@ -203,3 +215,8 @@ JAZZMIN_SETTINGS = {
     },
     "language_chooser": True,
 }
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+X_FRAME_OPTIONS = "ALLOW-FROM http://localhost:5173"
